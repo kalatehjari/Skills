@@ -1,0 +1,23 @@
+{
+  "skill_name": "pptx-workbench",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Turn my notes (sample_notes.md) into a short deck for tomorrow's lab meeting — include the stress path figure and a chart of the factors of safety against the targets.",
+      "expected_output": "~7-9 slides, message-style titles, figure slide with stress_paths.png, native column chart FoS vs target, problems/next steps/ask slides, speaker notes; check + contact sheet reviewed.",
+      "files": ["evals/files/sample_notes.md", "evals/files/stress_paths.png"]
+    },
+    {
+      "id": 2,
+      "prompt": "What's in sample_deck.pptx? Give me a one-paragraph summary and tell me if anything needs fixing before I present it.",
+      "expected_output": "Summary of the 11-slide briefing (Lot 12, FoS below target, recommendation); flags low-res + duplicated placeholder figures (slides 6 and 9), missing chart x-axis title, text vs chart target mismatch on slide 8; no invented issues.",
+      "files": ["evals/files/sample_deck.pptx"]
+    },
+    {
+      "id": 3,
+      "prompt": "Fill sample_template.pptx for Auckland Council (date 3 Oct 2026), replace the Lorem ipsum agenda with: Findings, Options, Recommendation, and move the agenda slide to be first.",
+      "expected_output": "No {{placeholders}} or lorem ipsum left; agenda bullets replaced; slide order swapped; render checked.",
+      "files": ["evals/files/sample_template.pptx"]
+    }
+  ]
+}

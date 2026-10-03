@@ -1,0 +1,29 @@
+{
+  "skill_name": "docx-workbench",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Fill in sample_template.docx using sample_data.json — the borehole table should have one row per borehole. Then give me a PDF too.",
+      "expected_output": "filled .docx with no {{placeholders}} left, 3 borehole rows, header shows project name; a PDF rendered from it; original untouched.",
+      "files": ["evals/files/sample_template.docx", "evals/files/sample_data.json"]
+    },
+    {
+      "id": 2,
+      "prompt": "My co-author left tracked changes and comments in sample_reviewed.docx. Summarise what they want, then accept all the changes and give me a clean copy with tracking off.",
+      "expected_output": "Summary of 3 comments and the 9 revisions (Lot 12->14, silty clay->clayey silt, depth wording, deleted methods phrase); clean .docx with 0 tracked changes.",
+      "files": ["evals/files/sample_reviewed.docx"]
+    },
+    {
+      "id": 3,
+      "prompt": "Review sample_template.docx as my supervisor would: suggest the edits as tracked changes (don't change it directly) — 'Lot 12' should be 'Lot 14' and 'silty clay' should be 'clayey silt' — and add a comment asking when the groundwater level was measured.",
+      "expected_output": "New .docx with tracked deletions/insertions for both edits and one comment anchored on 'groundwater table'; author set; original untouched.",
+      "files": ["evals/files/sample_template.docx"]
+    },
+    {
+      "id": 4,
+      "prompt": "Turn sample_draft.md into a properly formatted Word report (A4, Calibri, dark blue headings) — keep the equation and the footnote working.",
+      "expected_output": ".docx with Title, Heading 1s, a real Word equation (OMML) and a real footnote; A4 page; styles from a reference doc.",
+      "files": ["evals/files/sample_draft.md"]
+    }
+  ]
+}

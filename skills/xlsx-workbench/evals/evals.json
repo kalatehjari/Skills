@@ -1,0 +1,23 @@
+{
+  "skill_name": "xlsx-workbench",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you check sample_lab.xlsx before I send it to the client? I think some of the PI values might be wrong and there may be formula errors.",
+      "expected_output": "Report: #DIV/0! in H5/H6, F7 typed value (24) overwriting PI formula, F8 inconsistent formula (+0), C7 number stored as text, H5 references empty E9; proposed fixes; no silent changes to the original.",
+      "files": ["evals/files/sample_lab.xlsx"]
+    },
+    {
+      "id": 2,
+      "prompt": "Turn sample_results.csv into a proper Excel table I can filter, with a total for the Load column, and add a bar chart of load by sample.",
+      "expected_output": "xlsx with typed numbers/dates, Excel Table or filter, frozen header, SUBTOTAL formula for Load only, native bar chart; values verified by recalculation.",
+      "files": ["evals/files/sample_results.csv"]
+    },
+    {
+      "id": 3,
+      "prompt": "sample_profile.xlsx has moisture and LL against depth. Give me summary stats and add a depth profile chart with depth increasing downwards.",
+      "expected_output": "Per-column stats (min/max/mean) for w and LL; native scatter chart with depth on reversed Y axis, axis titles with units; render checked.",
+      "files": ["evals/files/sample_profile.xlsx"]
+    }
+  ]
+}

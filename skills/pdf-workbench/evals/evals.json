@@ -1,0 +1,29 @@
+{
+  "skill_name": "pdf-workbench",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I've got this paper (evals/files/sample_paper.pdf). Can you pull Table 1 into an Excel file and tell me the DOI and title? Also give me the abstract text without the right column mixed in.",
+      "expected_output": "An .xlsx with one sheet holding the 4x4 strength table (numbers stored as numbers); DOI 10.1016/j.enggeo.2024.107123; title 'Shear strength of residual soils under cyclic loading'; abstract text from the left column only.",
+      "files": ["evals/files/sample_paper.pdf"]
+    },
+    {
+      "id": 2,
+      "prompt": "fill in sample_form.pdf for me: name Roo Kalatehjari, tick agree, method direct shear, soil sand, and on page 2 notes 'BH2 retested'. I need a final version I can email that nobody can edit.",
+      "expected_output": "A flattened filled PDF (no form fields remaining) with all five values visible on render; original untouched.",
+      "files": ["evals/files/sample_form.pdf"]
+    },
+    {
+      "id": 3,
+      "prompt": "This scanned page (sample_scan.pdf) isn't searchable. Make it searchable and tell me what DOI is printed on it.",
+      "expected_output": "An OCR'd PDF with a text layer; the DOI 10.1016/j.enggeo.2024.107123 reported, with a note that it came from OCR.",
+      "files": ["evals/files/sample_scan.pdf"]
+    },
+    {
+      "id": 4,
+      "prompt": "sample_flat_form.pdf has no fields. Write my name (Roo Kalatehjari) on the Name line and tick the 'I agree' box, then show me it looks right.",
+      "expected_output": "Overlay PDF with name sitting on the underline and a tick inside the brackets; a rendered PNG checked before reporting.",
+      "files": ["evals/files/sample_flat_form.pdf"]
+    }
+  ]
+}
