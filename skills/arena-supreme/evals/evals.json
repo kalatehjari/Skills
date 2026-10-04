@@ -1,0 +1,23 @@
+{
+  "skill_name": "arena-supreme",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Arena this: three versions of my novel are attached. Critique them and give me one combined report saying which to carry forward. Keep the token cost down.",
+      "expected_output": "A pre-flight cost estimate and state file. The evidence comes from lean blind readers and scene judges launched together, with checkpoints saved to the user's folder. 2-3 candidate reports are written from one script-built digest, then cross-judged on a different model. The pick is scored against the rubric, the grafts are recorded, and quotes and figures are verified by script. The result is one report plus a synthesis note with the measured cost of each phase.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "throw this design doc in the arena - I want the strongest version, but last time the agents ran out of usage halfway and lost everything.",
+      "expected_output": "Uses ARENA_STATE.json and early draft writes, with checkpoints after each phase. Gates the budget before fan-out, resumes rather than relaunches, and runs the cross-judge only after all drafts are on disk. Delivers a synthesised doc with a record of grafts and rejections.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Check my report's quotes against these source files and tell me which ones aren't verbatim.",
+      "expected_output": "Runs scripts/verify_quotes.py with the right --sources globs. Reports n/n verbatim and lists every NOT FOUND quote with its missing fragment, without reading the sources into context.",
+      "files": ["evals/files/report_bad.md", "evals/files/source_review.md"]
+    }
+  ]
+}
