@@ -50,7 +50,7 @@ git clone https://github.com/kalatehjari/Skills
 ln -s "$PWD/Skills/skills/pdf-workbench" ~/.claude/skills/pdf-workbench
 ```
 
-**claude.ai, Claude desktop, Cowork:** download `dist-console/<name>.zip` and upload it in the Skills section of settings. Third-party zips are in `dist/`. (Use `dist-console/` for the workbenches; the older copies in `dist/` predate the frontmatter fixes.)
+**claude.ai, Claude desktop, Cowork:** download `dist-console/<name>.zip` and upload it in the Skills section of settings. Third-party zips are in `dist/`.
 
 **Skills API / Claude Console:** upload `dist-console/<name>.zip`. See the [Skills guide](https://docs.claude.com/en/api/skills-guide).
 
