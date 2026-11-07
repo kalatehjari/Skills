@@ -1,0 +1,44 @@
+{
+  "skill_name": "farsi-scifi-builder",
+  "evals": [
+    {
+      "id": 1,
+      "name": "draft-qanat-ai-scene",
+      "prompt": "یه صحنه‌ی کوتاه (حدود ۳۵۰ کلمه) بنویس: تهران، سال ۱۴۶۰. آب جیره‌بندیه و یه هوش مصنوعی شهری قنات‌های قدیمی رو دوباره راه انداخته. یه مقنی پیر باهاش حرف می‌زنه. روایت سوم‌شخص، دیالوگ‌ها محاوره.",
+      "expected_output": "About 350 Persian words. Formal-literary third-person narration in past tense, Tehrani colloquial dialogue in « ». A deliberate pronoun choice for the AI (آن or او) used consistently. Qanat material used structurally, not as decoration. No translationese markers; farsi_lint.py reports 0 mechanical and 0 style issues. A one-line note after the scene on any style choices made.",
+      "files": [
+        "evals/files/sample_clean.md"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "edit-translationese-paragraph",
+      "prompt": "This paragraph from my novel reads like a translation. Can you fix it? (contents of evals/files/sample_translationese.md pasted)",
+      "expected_output": "All Arabic ي/ك and digits converted; half-spaces restored; « » quotes; no توسط passive, می‌باشد, گردید, به‌طور, قادر, به منظور, انجام دادند or quote-after-که left; redundant او removed; meaning preserved (sound from the station system, oxygen below 20%, commander calls for a decision, emergency meeting). A short summary of change types with one example each, in English.",
+      "files": [
+        "evals/files/sample_translationese.md"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "coin-generation-ship-terms",
+      "prompt": "I'm writing a far-future Persian novel set on a generation ship that left Earth 300 years ago. I need Persian words for: airlock, cryosleep, terraforming, mind upload, the ship's AI, and the people born on board. Should I use loanwords or coin new ones?",
+      "expected_output": "A recommendation grounded in the setting (300 years of isolation favours coinages and worn-down forms; official vs everyday registers can differ). For each concept, one or two candidates built from Persian morphology or reused old words, each parseable on first read, with collisions checked (e.g. هوابند already means airtight). At least one example sentence showing a term defined by context. Advice to log terms in the style sheet.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "translate-english-opening",
+      "prompt": "Here's the opening of my story in English. Can you put it into Persian so it reads like it was written in Persian? \"The ship had been falling toward the planet for three days when Mina realized the AI was lying to her. It wasn't a big lie. It said the oxygen reserves were at forty percent, and they were at thirty-eight. But she had grown up in her grandmother's house in Kashan, where every lie started small.\"",
+      "expected_output": "Persian that is rebuilt rather than transposed: no redundant او or به او, no «یک» article, numbers in words, Persian idiom for 'every lie started small', AI left unpronouned or given a deliberate pronoun. Lint clean. A line noting the choices (e.g. how the AI is referred to).",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "apply-handwritten-review",
+      "prompt": "I've read the chapter and marked my edits by hand on the PDF you sent (attached). Prepare a clean revised version for my review, with notes on what you learned from my edits.",
+      "expected_output": "Runs scripts/ink_diff.py against the PDF that was sent, reads every marked page (red pages first, zoom crops where marks are small), and lists the marks before applying any, including moves, margin rules and 'bad translation' judgments. Applies all edits to the draft source; ambiguous marks get an interpretation that fits the scene and are listed. Re-runs farsi_lint and the motif check, rebuilds the reading PDF with --notes covering what changed, learned preferences, interpretations and open questions, and records the preferences in the style sheet.",
+      "files": []
+    }
+  ]
+}

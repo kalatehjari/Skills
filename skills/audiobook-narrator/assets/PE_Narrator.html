@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PE Narrator</title>
+<style>
+:root{
+  --bg:#f6f5f2; --panel:#ffffff; --ink:#1d1d1f; --muted:#6b6b70; --line:#e3e1dc;
+  --accent:#2f5d8a; --accent-ink:#ffffff; --ok:#2e7d4f; --warn:#a15c00; --bad:#b3261e;
+  --chip:#eef2f7; --sel:#fff6d6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151618; --panel:#1e2023; --ink:#ececec; --muted:#9a9aa0; --line:#2e3135;
+    --accent:#7fb0e0; --accent-ink:#0d1520; --ok:#6cc391; --warn:#e0a85a; --bad:#ef8a83;
+    --chip:#25303b; --sel:#3a3420;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151618; --panel:#1e2023; --ink:#ececec; --muted:#9a9aa0; --line:#2e3135;
+  --accent:#7fb0e0; --accent-ink:#0d1520; --ok:#6cc391; --warn:#e0a85a; --bad:#ef8a83;
+  --chip:#25303b; --sel:#3a3420;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 16px 8px;max-width:1100px;margin:auto}
+header h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+main{max-width:1100px;margin:auto;padding:8px 16px 40px;display:grid;gap:14px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+section h2{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px}
+.step{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+button.icon{padding:3px 8px;font-size:13px}
+select,input[type=number],input[type=text]{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 8px}
+textarea{width:100%;min-height:120px;font:13px/1.4 ui-monospace,Menlo,monospace;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px}
+.muted{color:var(--muted)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;flex:1;min-width:120px}
+.bar>div{height:100%;width:0;background:var(--accent);transition:width .2s}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:600}
+.cast input[type=number]{width:72px}
+.lines{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.ln{display:grid;grid-template-columns:44px 92px 1fr auto;gap:8px;padding:6px 8px;border-bottom:1px solid var(--line);align-items:start}
+.ln:last-child{border-bottom:0}
+.ln.cur{background:var(--sel)}
+.ln .n{color:var(--muted);font-size:12px;padding-top:2px}
+.ln .who{font-size:12px;font-weight:700;padding:2px 6px;border-radius:6px;background:var(--chip);justify-self:start}
+.ln .txt{white-space:pre-wrap;word-break:break-word}
+.ln .txt[contenteditable=true]{outline:1px dashed var(--accent);border-radius:4px;padding:0 2px}
+.ln.dir .txt{color:var(--muted);font-style:italic}
+.st{font-size:12px;white-space:nowrap}
+.st.done{color:var(--ok)} .st.err{color:var(--bad)} .st.work{color:var(--warn)}
+.tools{display:flex;gap:4px}
+audio{width:100%;margin-top:8px}
+.note{font-size:13px;color:var(--muted);margin-top:6px}
+.pill{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--chip)}
+@media (max-width:640px){.ln{grid-template-columns:34px 1fr auto}.ln .who{grid-column:2}.ln .txt{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>PE Narrator</h1>
+  <p>Multi-voice audiobook narration with Kokoro, running entirely in this browser. Nothing is uploaded.</p>
+</header>
+<main>
+
+<section>
+  <h2><span class="step">1</span> Load the voices</h2>
+  <div class="row">
+    <label>Engine
+      <select id="device">
+        <option value="auto">Automatic (GPU if available)</option>
+        <option value="webgpu">GPU (WebGPU, faster)</option>
+        <option value="wasm">CPU (WASM, slower, works everywhere)</option>
+      </select>
+    </label>
+    <button class="primary" id="loadBtn">Load Kokoro</button>
+    <div class="bar"><div id="loadBar"></div></div>
+    <span id="loadMsg" class="muted">Not loaded</span>
+  </div>
+  <div class="note">The first load downloads the Kokoro model (about 90–330 MB) and keeps it in the browser's cache, so later loads are quick. Use Chrome or Safari on your Mac.</div>
+</section>
+
+<section>
+  <h2><span class="step">2</span> Open a narration script</h2>
+  <div class="row">
+    <input type="file" id="file" accept=".txt,text/plain">
+    <span class="muted">or paste it below, then</span>
+    <button id="parseBtn">Read script</button>
+    <span id="scriptMsg" class="pill">No script</span>
+  </div>
+  <textarea id="scriptText" placeholder="NARRATOR: Mara had drawn the birds too large.
+MARA: They're closer,
+NARRATOR: Mara said.
+[PAUSE 1s]"></textarea>
+  <div class="note">Format: <code>SPEAKER: text</code> per line; <code>[PAUSE 1.5s]</code>, <code>[SCENE BREAK — PAUSE 2.5s]</code>, <code>[SFX: soft interface tone]</code>, <code>[SFX: digital interference, 1.5s]</code>. Notes in [brackets] inside a line are not spoken ("slow", "quiet" and "soft" change the delivery). Anything above a line of ===== is ignored.</div>
+</section>
+
+<section>
+  <h2><span class="step">3</span> Cast the voices</h2>
+  <table class="cast"><thead><tr><th>Speaker</th><th>Voice</th><th>Speed</th><th>Loudness</th><th>Lines</th><th></th></tr></thead>
+  <tbody id="castBody"><tr><td colspan="6" class="muted">Read a script to see its speakers.</td></tr></tbody></table>
+  <div class="row" style="margin-top:8px">
+    <label><input type="checkbox" id="exact" checked> Exact punctuation pauses (as in narrate.py)</label>
+    <button id="resetCast">Reset to the PE cast</button>
+  </div>
+  <div class="note">Exact pauses: each line is spoken in pieces cut at punctuation, with 0.5 s after . ? ! and :, 0.75 s after , ; — and 0.25 s after …. Untick it to let Kokoro phrase whole lines itself (more natural flow, less exact timing).</div>
+</section>
+
+<section>
+  <h2><span class="step">4</span> Record</h2>
+  <div class="row">
+    <button class="primary" id="goBtn" disabled>Record all</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="buildBtn" disabled>Build audiobook</button>
+    <div class="bar"><div id="recBar"></div></div>
+    <span id="recMsg" class="muted"></span>
+  </div>
+  <div class="note">Recorded lines are kept while this page is open, so Stop and Record all carry on where they stopped. ▶ plays a line, ↻ records a new take, ✎ edits the words (then ↻). Listen for any garbled word and give it a new take.</div>
+  <div class="lines" id="lines" style="margin-top:10px"></div>
+</section>
+
+<section>
+  <h2><span class="step">5</span> Listen and save</h2>
+  <div class="row">
+    <input type="text" id="outName" value="Possible Enough v8 - Chapter 01" style="flex:1;min-width:220px">
+    <button id="mp3Btn" disabled>Save MP3</button>
+    <button id="wavBtn" disabled>Save WAV</button>
+    <span id="outMsg" class="muted"></span>
+  </div>
+  <audio id="player" controls></audio>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+<script>
+"use strict";
+// ------------------------------------------------------------------ settings
+const SR = 24000;
+const VOICES = ("af_heart af_alloy af_aoede af_bella af_jessica af_kore af_nicole af_nova af_river af_sarah af_sky " +
+  "am_adam am_echo am_eric am_fenrir am_liam am_michael am_onyx am_puck am_santa " +
+  "bf_alice bf_emma bf_isabella bf_lily bm_daniel bm_fable bm_george bm_lewis").split(" ");
+const PE_CAST = {
+  NARRATOR: ["af_heart", 0.95, 1.0], LEILA: ["bf_emma", 1.0, 1.0], MARA: ["af_sky", 1.05, 1.0],
+  AMRITA: ["af_nicole", 1.0, 1.0], NIA: ["bf_isabella", 0.98, 1.0], ORISON: ["am_michael", 0.9, 1.0],
+  SCREEN: ["af_heart", 0.9, 0.8], ENGINEER: ["am_adam", 1.0, 1.0],
+};
+const RULES = { full: 0.5, mid: 0.75, colon: 0.5, quote: 0.5, ellipsis: 0.25 };
+const GAP = { comma: 0.75, tag: 0.5, para: 0.7 };
+const CARRIER = "And then I heard it said,";
+const MATH = { "+": "plus", "=": "equals", "×": "times", "÷": "divided by", "−": "minus" };
+const MOCK = new URLSearchParams(location.search).has("mock");   // for testing the page without the model
+
+// ------------------------------------------------------------------ small helpers
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("pe-narrator:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("pe-narrator:" + k, JSON.stringify(v)); } catch {} },
+};
+function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function concat(parts) {
+  let n = 0; for (const p of parts) n += p.length;
+  const out = new Float32Array(n); let o = 0;
+  for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}
+const silence = (s) => new Float32Array(Math.max(0, Math.round(s * SR)));
+
+// ------------------------------------------------------------------ the voices (Kokoro, loaded on this page)
+// A background worker would be smoother, but browsers block workers in pages opened as files,
+// so the model runs on the page itself; the page pauses briefly between pieces to stay responsive.
+const KOKORO_URL = "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.js";
+const MODEL_ID = "onnx-community/Kokoro-82M-v1.0-ONNX";
+let tts = null, ready = false;
+
+function resample(x, sr) {
+  if (sr === SR) return x;
+  const r = sr / SR, n = Math.floor(x.length / r), y = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const t = i * r, k = Math.floor(t), f = t - k; y[i] = (x[k] || 0) * (1 - f) + (x[k + 1] || 0) * f; }
+  return y;
+}
+
+async function synth(text, voice, speed) {
+  if (MOCK) {   // a tone whose length follows the text, so the page can be tested without the model
+    const n = Math.round((0.06 * text.length + 0.2) * SR / speed), y = new Float32Array(n + Math.round(0.1 * SR));
+    for (let i = 0; i < n; i++) y[i + 1200] = 0.3 * Math.sin(i / 8) * (/,\s/.test(text) && Math.abs(i - n * 0.6) < 2400 ? 0 : 1);
+    await new Promise((r) => setTimeout(r, 5));
+    return y;
+  }
+  await new Promise((r) => setTimeout(r, 0));   // let the page update between pieces
+  const a = await tts.generate(text, { voice, speed });
+  return resample(new Float32Array(a.audio), a.sampling_rate);
+}
+
+async function loadModel(choice) {
+  const { KokoroTTS } = await import(KOKORO_URL);
+  const progress = (p) => {
+    if (p && p.status === "progress" && p.total) {
+      $("loadBar").style.width = Math.round(100 * p.loaded / p.total) + "%";
+      $("loadMsg").textContent = "Downloading " + (p.file || "") + " " + Math.round(100 * p.loaded / p.total) + "%";
+    }
+  };
+  let device = choice === "auto" ? ("gpu" in navigator ? "webgpu" : "wasm") : choice;
+  try {
+    tts = await KokoroTTS.from_pretrained(MODEL_ID, { dtype: device === "webgpu" ? "fp32" : "q8", device, progress_callback: progress });
+    if (device === "webgpu") await tts.generate("Ready.", { voice: "af_heart" });   // make sure the GPU really works
+  } catch (err) {
+    if (device !== "webgpu") throw err;
+    $("loadMsg").textContent = "GPU not available here; using the CPU instead…";
+    device = "wasm";
+    tts = await KokoroTTS.from_pretrained(MODEL_ID, { dtype: "q8", device, progress_callback: progress });
+  }
+  return device;
+}
+
+$("loadBtn").onclick = async () => {
+  if (MOCK) { ready = true; $("loadMsg").textContent = "Ready (test mode)"; $("loadBtn").disabled = true; refreshButtons(); return; }
+  $("loadBtn").disabled = true; $("loadMsg").textContent = "Starting…";
+  store.set("device", $("device").value);
+  try {
+    const device = await loadModel($("device").value);
+    ready = true; $("loadBar").style.width = "100%";
+    $("loadMsg").textContent = "Ready (" + (device === "webgpu" ? "GPU" : "CPU") + ")";
+    refreshButtons();
+  } catch (err) {
+    console.error(err);
+    $("loadMsg").textContent = "Could not load Kokoro: " + (err && err.message ? err.message : err);
+    $("loadBtn").disabled = false;
+  }
+};
+$("device").value = store.get("device", "auto");
+
+// ------------------------------------------------------------------ script parsing (same rules as narrate_cast.py)
+function parseScript(text) {
+  const k = text.indexOf("=====");
+  if (k >= 0) text = text.slice(text.indexOf("\n", k) + 1);
+  const items = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith("[")) {
+      const inner = line.replace(/^\[|\]$/g, "");
+      if (/^SFX/i.test(inner)) { items.push({ kind: "sfx", desc: inner.split(":").slice(1).join(":").trim() || inner }); continue; }
+      const m = inner.match(/PAUSE\s+([\d.]+)\s*s/i);
+      if (m) items.push({ kind: "pause", secs: parseFloat(m[1]), label: inner });
+      continue;
+    }
+    const m = line.match(/^([A-Z][A-Z ]*[A-Z]|[A-Z]):\s*(.*)$/);
+    if (!m) continue;
+    const dirs = [...m[2].matchAll(/\[([^\]]*)\]/g)].map((x) => x[1]).join(" ").toLowerCase();
+    const body = m[2].replace(/\s*\[[^\]]*\]\s*/g, " ").trim();
+    if (body) items.push({ kind: "say", who: m[1], text: body, dirs });
+  }
+  // the silence before each line
+  const out = []; let pend = 0, prev = null;
+  for (const it of items) {
+    if (it.kind === "pause") { pend = Math.max(pend, it.secs); out.push({ ...it, shown: true }); continue; }
+    if (it.kind === "sfx") { out.push({ ...it, gap: pend }); pend = 0; prev = null; continue; }
+    let gap = GAP.para;
+    if (prev) {
+      if (/[,;]\s*$/.test(prev.text)) gap = GAP.comma;
+      else if (it.who === "NARRATOR" && /^[a-z]/.test(it.text)) gap = GAP.tag;
+    } else if (out.length && out[out.length - 1].kind === "sfx") gap = 0;
+    const first = !out.some((o) => o.kind === "say" || o.kind === "sfx");
+    out.push({ ...it, gap: Math.max(first ? 0 : gap, pend) });
+    pend = 0; prev = it;
+  }
+  return { lines: out, tail: Math.max(pend, 1) };
+}
+
+// ------------------------------------------------------------------ pause rules inside a line (port of narrate.py)
+function speakable(t) {
+  return t.replace(/\S+/g, (w) => (w.length > 1 && /^[A-Z'’.,;:!?-]+$/.test(w) && /[A-Z]{2}/.test(w) ? w.toLowerCase() : w))
+          .replace(/\s([+=×÷−])\s/g, (m, op) => " " + MATH[op] + " ");
+}
+function chunks(text) {   // [{text, pause}] ; the pause comes after the chunk
+  const out = []; let buf = "";
+  const push = (mark, pause) => { const t = (buf + mark).trim(); if (t.replace(/[.,;:!?…]/g, "").trim()) out.push({ text: t, pause }); else if (out.length) out[out.length - 1].pause = Math.max(out[out.length - 1].pause, pause); buf = ""; };
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], prevD = /\d/.test(text[i - 1] || ""), nextD = /\d/.test(text[i + 1] || "");
+    if (text.startsWith("...", i)) { push("...", RULES.ellipsis); i += 2; }
+    else if (c === "…") push("...", RULES.ellipsis);
+    else if (".?!".includes(c) && !(c === "." && prevD && nextD)) push(c, RULES.full);
+    else if (c === "," && prevD && nextD) buf += c;
+    else if (",;".includes(c)) push(c, RULES.mid);
+    else if ("—–()".includes(c)) push("", RULES.mid);
+    else if (c === ":") push(":", RULES.colon);
+    else if ("“”\"".includes(c)) push("", RULES.quote);
+    else buf += c;
+  }
+  push("", 0);
+  if (out.length) out[out.length - 1].pause = 0;
+  return out;
+}
+const wordCount = (t) => (t.match(/[A-Za-z0-9’']+/g) || []).length;
+
+// ------------------------------------------------------------------ audio clean-up
+function trim(x) {
+  let mx = 0; for (let i = 0; i < x.length; i++) mx = Math.max(mx, Math.abs(x[i]));
+  const th = Math.max(1e-4, 0.005 * mx);
+  let a = 0, b = x.length - 1;
+  while (a < x.length && Math.abs(x[a]) <= th) a++;
+  while (b > a && Math.abs(x[b]) <= th) b--;
+  if (a >= b) return new Float32Array(0);
+  const s = Math.max(0, a - Math.round(0.015 * SR)), e = Math.min(x.length, b + Math.round(0.045 * SR));
+  const y = x.slice(s, e), f = Math.min(Math.round(0.005 * SR), y.length >> 1);
+  for (let i = 0; i < f; i++) { y[i] *= i / f; y[y.length - 1 - i] *= i / f; }
+  return y;
+}
+function cutAfterCarrier(y) {   // keep only what follows the last real pause (the comma after the carrier)
+  const fr = Math.round(0.01 * SR), n = Math.floor(y.length / fr), rms = new Float32Array(n);
+  let mx = 0;
+  for (let k = 0; k < n; k++) { let s = 0; for (let i = k * fr; i < (k + 1) * fr; i++) s += y[i] * y[i]; rms[k] = Math.sqrt(s / fr); mx = Math.max(mx, rms[k]); }
+  const th = 0.06 * mx; let best = -1, run = 0;
+  for (let k = 0; k < n; k++) {
+    if (rms[k] < th) run++;
+    else { if (run >= 8 && k - run > 10) best = k; run = 0; }
+  }
+  if (best < 0) return null;
+  return trim(y.slice(Math.max(0, best * fr - Math.round(0.02 * SR))));
+}
+
+async function sayChunk(text, voice, speed) {
+  if (wordCount(text) === 1) {   // Kokoro garbles a word said on its own: say it after a carrier, then cut
+    const y = await synth(CARRIER + " " + text, voice, speed);
+    const cut = cutAfterCarrier(trim(y));
+    if (cut && cut.length > 0.12 * SR) return cut;
+  }
+  return trim(await synth(text, voice, speed));
+}
+
+async function recordLine(line, cast) {
+  const [voice, speed0] = cast[line.who] || cast.NARRATOR || PE_CAST.NARRATOR;
+  const speed = speed0 * (/slow/.test(line.dirs) ? 0.9 : 1);
+  const text = speakable(line.text);
+  if (!$("exact").checked) {
+    if (wordCount(text) === 1) return sayChunk(text, voice, speed);
+    return trim(await synth(text, voice, speed));
+  }
+  const parts = [];
+  for (const c of chunks(text)) {
+    parts.push(await sayChunk(c.text, voice, speed));
+    if (c.pause) parts.push(silence(c.pause));
+  }
+  return concat(parts);
+}
+
+// ------------------------------------------------------------------ sound effects
+function sfx(desc) {
+  const d = desc.toLowerCase();
+  if (/tone|chime/.test(d)) {
+    const n = Math.round(0.9 * SR), y = new Float32Array(n);
+    for (let i = 0; i < n; i++) { const t = i / SR; y[i] = 0.12 * (Math.sin(2 * Math.PI * 880 * t) + 0.35 * Math.sin(2 * Math.PI * 1320 * t)) * Math.exp(-4.5 * t) * Math.min(1, i / 240); }
+    return y;
+  }
+  if (/interference|glitch|static/.test(d)) {
+    const m = d.match(/([\d.]+)\s*s/), n = Math.round((m ? parseFloat(m[1]) : 1.5) * SR), y = new Float32Array(n);
+    let seed = 13; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    let pos = 0, prevN = 0;
+    while (pos < n) {
+      const burst = Math.round((0.03 + 0.11 * rnd()) * SR), on = rnd() < 0.7, g = 0.4 + 0.6 * rnd();
+      for (let i = pos; i < Math.min(n, pos + burst); i++) {
+        const noise = (rnd() * 2 - 1); prevN = 0.8 * prevN + 0.2 * noise;
+        const buzz = Math.sin(2 * Math.PI * 120 * i / SR) > 0 ? 0.3 : -0.3;
+        y[i] = on ? 0.18 * g * (prevN * 1.5 + buzz) : 0;
+      }
+      pos += burst + Math.round(0.06 * rnd() * SR);
+    }
+    const f = Math.round(0.02 * SR); for (let i = 0; i < f; i++) { y[i] *= i / f; y[n - 1 - i] *= i / f; }
+    return y;
+  }
+  return silence(1);
+}
+
+// ------------------------------------------------------------------ state and UI
+let script = null;      // {lines, tail}
+let cast = {};
+const takes = new Map(); // line index -> Float32Array
+let running = false, stopAsked = false, built = null;
+
+function castFor(speakers) {
+  const saved = store.get("cast", {});
+  const c = {};
+  for (const s of speakers) c[s] = saved[s] || PE_CAST[s] || PE_CAST.NARRATOR;
+  return c;
+}
+function renderCast() {
+  const body = $("castBody");
+  const speakers = Object.keys(cast);
+  if (!speakers.length) { body.innerHTML = '<tr><td colspan="6" class="muted">Read a script to see its speakers.</td></tr>'; return; }
+  const count = (s) => script.lines.filter((l) => l.kind === "say" && l.who === s).length;
+  body.innerHTML = speakers.map((s) => `<tr data-s="${esc(s)}">
+    <td><b>${esc(s)}</b>${PE_CAST[s] ? "" : ' <span class="muted">(new)</span>'}</td>
+    <td><select class="v">${VOICES.map((v) => `<option ${v === cast[s][0] ? "selected" : ""}>${v}</option>`).join("")}</select></td>
+    <td><input class="sp" type="number" min="0.5" max="2" step="0.05" value="${cast[s][1]}"></td>
+    <td><input class="ld" type="number" min="0.2" max="1.5" step="0.05" value="${cast[s][2]}"></td>
+    <td class="muted">${count(s)}</td>
+    <td><button class="icon pv" title="Hear this voice">▶ Try</button></td></tr>`).join("");
+  body.querySelectorAll("tr").forEach((tr) => {
+    const s = tr.dataset.s;
+    const upd = () => {
+      const nv = [tr.querySelector(".v").value, parseFloat(tr.querySelector(".sp").value) || 1, parseFloat(tr.querySelector(".ld").value) || 1];
+      const changedVoice = nv[0] !== cast[s][0] || nv[1] !== cast[s][1];
+      cast[s] = nv; store.set("cast", { ...store.get("cast", {}), [s]: nv });
+      if (changedVoice) script.lines.forEach((l, i) => { if (l.who === s) { takes.delete(i); setStatus(i, ""); } });
+      built = null; refreshButtons();
+    };
+    tr.querySelectorAll("select,input").forEach((el) => (el.onchange = upd));
+    tr.querySelector(".pv").onclick = async () => {
+      if (!ready) return alert("Load Kokoro first (step 1).");
+      const line = script.lines.find((l) => l.kind === "say" && l.who === s && wordCount(l.text) > 4) || script.lines.find((l) => l.who === s);
+      play(scaled(await recordLine(line, cast), cast[s][2]));
+    };
+  });
+}
+function renderLines() {
+  const box = $("lines");
+  box.innerHTML = script.lines.map((l, i) => {
+    if (l.kind === "say") return `<div class="ln" id="ln${i}"><span class="n">${i + 1}</span><span class="who">${esc(l.who)}</span>
+      <span class="txt">${esc(l.text)}${l.dirs ? ` <span class="muted">[${esc(l.dirs)}]</span>` : ""}</span>
+      <span class="tools"><span class="st" id="st${i}"></span><button class="icon" data-a="play" data-i="${i}" title="Play">▶</button><button class="icon" data-a="redo" data-i="${i}" title="New take">↻</button><button class="icon" data-a="edit" data-i="${i}" title="Edit words">✎</button></span></div>`;
+    const label = l.kind === "sfx" ? "Sound: " + l.desc : l.label;
+    return `<div class="ln dir" id="ln${i}"><span class="n">${i + 1}</span><span class="who">${l.kind === "sfx" ? "SFX" : "PAUSE"}</span><span class="txt">${esc(label)}</span><span class="tools"><span class="st" id="st${i}"></span></span></div>`;
+  }).join("");
+  box.onclick = async (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const i = +b.dataset.i, line = script.lines[i];
+    if (b.dataset.a === "play") {
+      if (!takes.has(i)) { if (!ready) return alert("Load Kokoro first (step 1)."); await recordOne(i); }
+      play(scaled(takes.get(i), (cast[line.who] || [0, 0, 1])[2]));
+    } else if (b.dataset.a === "redo") {
+      if (!ready) return alert("Load Kokoro first (step 1).");
+      takes.delete(i); built = null; await recordOne(i);
+      play(scaled(takes.get(i), (cast[line.who] || [0, 0, 1])[2]));
+    } else if (b.dataset.a === "edit") {
+      const t = document.querySelector(`#ln${i} .txt`);
+      if (t.isContentEditable) { line.text = t.textContent.replace(/\s*\[[^\]]*\]\s*$/, "").trim(); t.contentEditable = false; takes.delete(i); setStatus(i, "edited"); built = null; refreshButtons(); }
+      else { t.textContent = line.text; t.contentEditable = true; t.focus(); b.title = "Done editing"; }
+    }
+  };
+}
+function setStatus(i, s, cls) { const el = $("st" + i); if (el) { el.textContent = s; el.className = "st " + (cls || ""); } }
+function refreshButtons() {
+  const has = !!script;
+  $("goBtn").disabled = !(has && ready) || running;
+  $("stopBtn").disabled = !running;
+  const says = has ? script.lines.filter((l) => l.kind === "say").length : 0;
+  const done = has ? script.lines.filter((l, i) => l.kind === "say" && takes.has(i)).length : 0;
+  $("buildBtn").disabled = !(has && done === says && says > 0) || running;
+  $("mp3Btn").disabled = $("wavBtn").disabled = !built;
+  if (has) { $("recBar").style.width = (says ? Math.round(100 * done / says) : 0) + "%"; if (!running) $("recMsg").textContent = `${done} of ${says} lines recorded`; }
+}
+function scaled(y, g) { if (g === 1) return y; const z = new Float32Array(y.length); for (let i = 0; i < y.length; i++) z[i] = y[i] * g; return z; }
+
+async function recordOne(i) {
+  const line = script.lines[i];
+  document.querySelectorAll(".ln.cur").forEach((n) => n.classList.remove("cur"));
+  const row = $("ln" + i); if (row) { row.classList.add("cur"); row.scrollIntoView({ block: "nearest" }); }
+  setStatus(i, "recording…", "work");
+  try { takes.set(i, await recordLine(line, cast)); setStatus(i, "✓", "done"); }
+  catch (err) { setStatus(i, "failed", "err"); console.error(err); throw err; }
+  finally { refreshButtons(); }
+}
+
+$("goBtn").onclick = async () => {
+  running = true; stopAsked = false; refreshButtons();
+  const t0 = performance.now(); let n = 0;
+  try {
+    for (let i = 0; i < script.lines.length && !stopAsked; i++) {
+      const l = script.lines[i];
+      if (l.kind !== "say" || takes.has(i)) continue;
+      await recordOne(i); n++;
+      const says = script.lines.filter((x) => x.kind === "say").length, done = script.lines.filter((x, k) => x.kind === "say" && takes.has(k)).length;
+      const per = (performance.now() - t0) / n / 1000, left = Math.round(per * (says - done) / 60);
+      $("recMsg").textContent = `${done} of ${says} lines · about ${left} min left`;
+    }
+  } catch (err) { $("recMsg").textContent = "Stopped: " + err.message; }
+  running = false; refreshButtons();
+  if (!stopAsked && !$("buildBtn").disabled) build();
+};
+$("stopBtn").onclick = () => { stopAsked = true; $("recMsg").textContent = "Stopping after this line…"; };
+$("buildBtn").onclick = build;
+
+function build() {
+  const parts = [];
+  script.lines.forEach((l, i) => {
+    if (l.kind === "sfx") { parts.push(silence(l.gap), sfx(l.desc)); return; }
+    if (l.kind !== "say") return;
+    const g = (cast[l.who] || [0, 0, 1])[2] * (/quiet|soft/.test(l.dirs) ? 0.8 : 1);
+    parts.push(silence(l.gap), scaled(takes.get(i), g));
+  });
+  parts.push(silence(script.tail));
+  let y = concat(parts), mx = 0;
+  for (let i = 0; i < y.length; i++) mx = Math.max(mx, Math.abs(y[i]));
+  if (mx > 0) { const k = 0.89 / mx; for (let i = 0; i < y.length; i++) y[i] *= k; }
+  built = y;
+  const url = URL.createObjectURL(wavBlob(y));
+  $("player").src = url;
+  $("outMsg").textContent = `${(y.length / SR / 60).toFixed(1)} minutes`;
+  refreshButtons();
+}
+
+let playing = null;
+function play(y) {
+  if (playing) { try { playing.stop(); } catch {} }
+  const ctx = play.ctx || (play.ctx = new AudioContext({ sampleRate: SR }));
+  const b = ctx.createBuffer(1, y.length, SR); b.copyToChannel(y, 0);
+  const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(); playing = s;
+}
+
+// ------------------------------------------------------------------ files
+function wavBlob(y) {
+  const buf = new ArrayBuffer(44 + y.length * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + y.length * 2, true); w(8, "WAVE"); w(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, SR, true);
+  v.setUint32(28, SR * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, y.length * 2, true);
+  for (let i = 0; i < y.length; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, y[i])) * 32767, true);
+  return new Blob([buf], { type: "audio/wav" });
+}
+function mp3Blob(y) {
+  const enc = new lamejs.Mp3Encoder(1, SR, 128), pcm = new Int16Array(y.length), out = [];
+  for (let i = 0; i < y.length; i++) pcm[i] = Math.max(-1, Math.min(1, y[i])) * 32767;
+  for (let i = 0; i < pcm.length; i += 1152) { const d = enc.encodeBuffer(pcm.subarray(i, i + 1152)); if (d.length) out.push(new Uint8Array(d)); }
+  const end = enc.flush(); if (end.length) out.push(new Uint8Array(end));
+  return new Blob(out, { type: "audio/mpeg" });
+}
+function download(blob, name) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+$("wavBtn").onclick = () => download(wavBlob(built), $("outName").value.trim() + ".wav");
+$("mp3Btn").onclick = () => {
+  if (typeof lamejs === "undefined") { $("outMsg").textContent = "MP3 encoder didn't load (no internet?); saving WAV instead."; return $("wavBtn").onclick(); }
+  $("outMsg").textContent = "Encoding MP3…";
+  setTimeout(() => { download(mp3Blob(built), $("outName").value.trim() + ".mp3"); $("outMsg").textContent = `${(built.length / SR / 60).toFixed(1)} minutes · MP3 saved`; }, 30);
+};
+
+function loadScript(text) {
+  script = parseScript(text);
+  takes.clear(); built = null;
+  const speakers = [...new Set(script.lines.filter((l) => l.kind === "say").map((l) => l.who))];
+  cast = castFor(speakers);
+  const says = script.lines.filter((l) => l.kind === "say").length;
+  $("scriptMsg").textContent = says ? `${says} spoken lines · ${speakers.length} speakers` : "No spoken lines found";
+  renderCast(); renderLines(); refreshButtons();
+}
+$("file").onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const text = await f.text(); $("scriptText").value = text; loadScript(text);
+  const m = f.name.match(/Ch(\d+)/i); if (m) $("outName").value = "Possible Enough v8 - Chapter " + m[1].padStart(2, "0");
+};
+$("parseBtn").onclick = () => loadScript($("scriptText").value);
+$("resetCast").onclick = () => {
+  if (!script) return;
+  store.set("cast", {});
+  const before = { ...cast };
+  cast = castFor(Object.keys(cast));
+  for (const s of Object.keys(cast)) if (before[s][0] !== cast[s][0] || before[s][1] !== cast[s][1]) script.lines.forEach((l, i) => { if (l.who === s) takes.delete(i); });
+  renderCast(); renderLines(); refreshButtons();
+};
+// for tests
+window.__pe = { parseScript, chunks, speakable, wordCount };
+</script>
+</body>
+</html>

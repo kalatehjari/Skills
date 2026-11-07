@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#171511">
+<title>{{TITLE}}</title>
+<!--FONTS-->
+<style>
+:root{
+  --paper:#E4E0D5; --paper2:#D2CBBB; --ink:#171511; --ink2:#4A453B; --blue:#5C64FF;
+  --fell:"IM Fell English",Georgia,"Times New Roman",serif;
+  --fellsc:"IM Fell English SC","IM Fell English",Georgia,serif;
+  --type:"Special Elite","Courier New",Courier,monospace;
+  --safeL:env(safe-area-inset-left,0px); --safeR:env(safe-area-inset-right,0px); --safeB:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--ink);font-family:var(--fell);
+  -webkit-user-select:none;user-select:none;touch-action:none;overscroll-behavior:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;background:var(--paper)}
+#ui{position:fixed;inset:0;pointer-events:none;z-index:5}
+.screen{position:absolute;inset:0;display:none;pointer-events:auto}
+.screen.show{display:flex}
+#title{flex-direction:column;justify-content:center;padding:0 calc(7vw + var(--safeL));
+  background:linear-gradient(90deg,rgba(228,224,213,.96) 0%,rgba(228,224,213,.86) 36%,rgba(228,224,213,0) 72%)}
+.logo{font-family:var(--fellsc);font-size:clamp(44px,9vw,120px);line-height:.9;margin:0;letter-spacing:.03em;filter:url(#wob)}
+.tag{font-style:italic;font-size:clamp(17px,2.2vw,24px);color:var(--ink2);margin:.5em 0 1.3em;max-width:30ch}
+.btn{font:italic clamp(22px,2.8vw,32px)/1.25 var(--fell);background:none;border:0;color:var(--ink);cursor:pointer;padding:.1em 0;text-align:left}
+.btn:hover,.btn:focus-visible{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;outline:none}
+.fine{position:absolute;left:calc(7vw + var(--safeL));bottom:calc(18px + var(--safeB));font-size:14px;color:var(--ink2);max-width:52ch;line-height:1.35}
+#pause{justify-content:center;align-items:center;background:rgba(228,224,213,.84)}
+#pause .panel{text-align:center}
+#hud{position:absolute;inset:0;display:none}
+#hud.show{display:block}
+#xh{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 2px rgba(228,224,213,.7)}
+#prompt{position:absolute;left:50%;top:57%;transform:translateX(-50%);font:italic 21px var(--fell);white-space:nowrap;
+  text-shadow:0 0 6px var(--paper),0 0 14px var(--paper);opacity:0;transition:opacity .2s}
+#prompt.show{opacity:1}
+#toast{white-space:pre-line;position:absolute;left:50%;bottom:calc(17% + var(--safeB));transform:translateX(-50%);font:18px/1.4 var(--type);text-align:center;
+  max-width:min(560px,86vw);text-shadow:0 0 5px var(--paper),0 0 12px var(--paper),0 0 20px var(--paper);opacity:0;transition:opacity .5s}
+#toast.show{opacity:1}
+#touch{position:absolute;inset:0;display:none}
+#touch.show{display:block}
+#joy{position:absolute;left:calc(26px + var(--safeL));bottom:calc(26px + var(--safeB));width:128px;height:128px;border-radius:50%;
+  border:2px solid rgba(23,21,17,.55);background:rgba(228,224,213,.35)}
+#joyK{position:absolute;left:37px;top:37px;width:50px;height:50px;border-radius:50%;background:rgba(23,21,17,.72)}
+#joy.sprint #joyK{background:var(--ink)}
+.tb{position:absolute;width:66px;height:66px;border-radius:50%;border:2px solid var(--ink);background:rgba(228,224,213,.82);
+  font:italic 16px var(--fell);display:grid;place-items:center;pointer-events:auto}
+#tAct{right:calc(26px + var(--safeR));bottom:calc(112px + var(--safeB))}
+#tJump{right:calc(112px + var(--safeR));bottom:calc(26px + var(--safeB))}
+#tCrouch{right:calc(26px + var(--safeR));bottom:calc(198px + var(--safeB))}
+#tLamp{right:calc(198px + var(--safeR));bottom:calc(26px + var(--safeB))}
+#tPause{right:calc(14px + var(--safeR));top:calc(14px + env(safe-area-inset-top,0px));width:46px;height:46px;font-size:14px}
+.tb.on{background:var(--ink);color:var(--paper)}
+#loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--paper);font:40px var(--fellsc);z-index:9}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="wob"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter></svg>
+<canvas id="gl" tabindex="0"></canvas>
+<div id="ui">
+  <section id="title" class="screen show">
+    <h1 class="logo">{{TITLE}}</h1>
+    <div class="tag">A world drawn in ink. Find the door with the blue keyhole.</div>
+    <div><button class="btn" id="bBegin">Begin</button></div>
+    <div class="fine" id="help">WASD or arrows to move, mouse to look, Shift to run, Space to jump, E to open. On a phone or tablet: left thumb moves, drag on the right to look.</div>
+  </section>
+  <section id="pause" class="screen"><div class="panel"><div class="logo" style="font-size:52px">Paused</div><button class="btn" id="bResume" style="text-align:center">Resume</button></div></section>
+  <div id="hud"><div id="xh"></div><div id="prompt"></div><div id="toast"></div></div>
+  <div id="touch"><div id="joy"><div id="joyK"></div></div><div class="tb" id="tAct">open</div><div class="tb" id="tJump">jump</div><div class="tb" id="tCrouch">duck</div><div class="tb" id="tLamp">lamp</div><div class="tb" id="tPause">pause</div></div>
+</div>
+<div id="loading">{{TITLE}}</div>

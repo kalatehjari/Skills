@@ -1,0 +1,49 @@
+{
+  "skill_name": "pen-and-ink-game-builder",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "three-room-ink-horror",
+      "prompt": "I want a small first-person horror game that looks like an old pen-and-ink etching, all in one HTML file I can upload to itch.io. Three rooms: a flooded library, a clock tower stair, and a last room that's just white paper with the exit. Every exit door should open straight onto the next room, no loading screens. It has to work on my phone too. Call it 'The Ink Clock'.",
+      "expected_output": "One offline HTML file built from the starter kit, with three new levels matching the brief, portal doors between them, touch controls, a passing robot playtest and screenshots of every level that were looked at.",
+      "files": [],
+      "expectations": [
+        "A single HTML file of the game exists with three.js and the fonts inlined (it needs no network to run)",
+        "The game has three levels whose content matches a flooded library, a clock tower stair and a white paper final room",
+        "A robot playtest (scripts/playtest.py) reports every exit crossed and no JavaScript errors",
+        "The title screen and browser tab say 'The Ink Clock'",
+        "Screenshots of each level exist, and the reply explains how to play on a phone"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "escher-ceiling-level",
+      "setup": "python3 scripts/new_game.py 'Ink Sample' --dir <work>/ink-sample  (the user's existing game)",
+      "prompt": "Here's my ink game (the ink-sample folder). Add a new level after the second one: a tall square tower room where you walk through a blue arch onto a wall, then a second arch puts you on the ceiling, and the exit door is up there on the ceiling. Keep the existing levels working.",
+      "expected_output": "A new level inserted between levels II and III using face coordinates, two gravity zones (floor to wall, wall to ceiling) and an exit door standing on the ceiling; the game rebuilds and the robot playtest passes for every level.",
+      "files": [],
+      "expectations": [
+        "A new level is reached from level 2 and leads on to the final level, and the game still builds",
+        "The new level builds on faces (face/fW/fB) and has two gravity zones: floor to wall and wall to ceiling",
+        "The new level's exit door stands on the ceiling (exitDoor with an upQ from the ceiling face)",
+        "scripts/playtest.py passes: every exit crossed and every gravity zone ok",
+        "A screenshot shows the view from the wall or the ceiling"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "trailer-and-itch-assets",
+      "setup": "python3 scripts/new_game.py 'Ink Sample' --dir <work>/ink-sample  (the user's existing game)",
+      "prompt": "Make a 20 to 30 second trailer for my ink game (the ink-sample folder) with a title card at the end, plus a looping GIF of a door opening and three 1920x1080 screenshots for its itch.io page.",
+      "expected_output": "A 20-30 s 1080p MP4 with the game's own synthesized sound at about -14 LUFS, ending on a title card; a looping GIF under 3 MB of a door opening; three 1920x1080 screenshots.",
+      "files": [],
+      "expectations": [
+        "An MP4 trailer of 20 to 30 seconds exists, with an audio track normalised to about -14 LUFS",
+        "The trailer ends on a title card that shows the game's title",
+        "A looping GIF under 3 MB shows a door opening",
+        "Three 1920x1080 screenshots exist",
+        "The trailer was filmed frame by frame with scripts/film_shots.py from a director file"
+      ]
+    }
+  ]
+}

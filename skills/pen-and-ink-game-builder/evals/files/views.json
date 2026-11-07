@@ -1,0 +1,38 @@
+[
+ {
+  "name": "title",
+  "level": 0,
+  "steps": 75
+ },
+ {
+  "name": "hall-gallery",
+  "level": 1,
+  "pos": [
+   -3.5,
+   3.08,
+   6.8
+  ],
+  "yaw": 3.14159,
+  "pitch": 0.05,
+  "steps": 12,
+  "js": "const g = window.__game; g.step(30, 1/30, false); g.openExit();"
+ },
+ {
+  "name": "turned-wall",
+  "level": 2,
+  "steps": 12,
+  "js": "const g = window.__game, f = g.GAME.L.gravZones[0].to; g.GAME.L.ents.forEach(e => e.off = true); g.step(30, 1/30, false); g.PL.setFrameQ(g.faceQ(f)); g.PL.pos.set(0, 3, 6); g.look(Math.PI, 0.12); g.openExit();"
+ },
+ {
+  "name": "well-top",
+  "level": 4,
+  "pos": [
+   1.5,
+   10.56,
+   -4.2
+  ],
+  "yaw": -1.5708,
+  "pitch": -0.1,
+  "steps": 12
+ }
+]
