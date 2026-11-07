@@ -1,6 +1,6 @@
 ---
 name: xlsx-workbench
-description: Read, build, check and edit Excel workbooks (.xlsx/.xlsm/.xls/.csv) with tested Python scripts — formulas that actually calculate, error and consistency audits, formatted tables, native charts, sheet-to-CSV/JSON, workbook diffs, PDF/PNG renders. Use this whenever a task involves a spreadsheet: analysing data someone sent in Excel, turning CSV/JSON results into a tidy workbook, building a calculation sheet or model, checking a spreadsheet for #REF!/#DIV/0!/overwritten formulas, adding a chart, comparing two versions, or converting .xls/.ods. Trigger even for "my spreadsheet", "the Excel file", "lab data in xlsx", "make a table I can filter" or any attached .xlsx/.csv.
+description: "Read, build, check and edit Excel workbooks (.xlsx/.xlsm/.xls/.csv) with tested Python scripts — formulas that actually calculate, error and consistency audits, formatted tables, native charts, sheet-to-CSV/JSON, workbook diffs, PDF/PNG renders. Use this whenever a task involves a spreadsheet: analysing data someone sent in Excel, turning CSV/JSON results into a tidy workbook, building a calculation sheet or model, checking a spreadsheet for #REF!/#DIV/0!/overwritten formulas, adding a chart, comparing two versions, or converting .xls/.ods. Trigger even for \"my spreadsheet\", \"the Excel file\", \"lab data in xlsx\", \"make a table I can filter\" or any attached .xlsx/.csv."
 license: MIT (see LICENSE)
 ---
 

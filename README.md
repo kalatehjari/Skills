@@ -34,16 +34,35 @@ These are open-source skills by others, included unmodified with their licences.
 
 ## Installing a skill
 
-**Claude apps (claude.ai or desktop):** zip the skill folder so the zip contains `pdf-workbench/SKILL.md`. Then upload it under *Settings → Capabilities → Skills*. Ready-made zips are in `dist-console/` (original skills) and `dist/` (third-party).
+Pick the route for where Claude runs. `<name>` is a folder name from the table above.
 
-**Claude Code:** copy or symlink the folder into `~/.claude/skills/` (personal) or `.claude/skills/` (project):
+**Claude Code: plugin marketplace (easiest).** The repo is a marketplace with four plugins: `document-workbenches`, `reasoning-and-workflow`, `persian-writing` and `creative-media`.
+
+```
+/plugin marketplace add kalatehjari/Skills
+/plugin install document-workbenches@kalatehjari-skills
+```
+
+**Claude Code: single skill.** Copy or symlink the folder into `~/.claude/skills/` (personal) or `.claude/skills/` (project):
 
 ```bash
 git clone https://github.com/kalatehjari/Skills
 ln -s "$PWD/Skills/skills/pdf-workbench" ~/.claude/skills/pdf-workbench
 ```
 
-**API:** upload the folder with the Skills API. See the [Skills guide](https://docs.claude.com/en/api/skills-guide).
+**claude.ai, Claude desktop, Cowork:** download `dist-console/<name>.zip` and upload it in the Skills section of settings. Third-party zips are in `dist/`. (Use `dist-console/` for the workbenches; the older copies in `dist/` predate the frontmatter fixes.)
+
+**Skills API / Claude Console:** upload `dist-console/<name>.zip`. See the [Skills guide](https://docs.claude.com/en/api/skills-guide).
+
+**Any Claude without installing (one-off use):** give it `dist-md/<name>.md`. It is the whole skill in one Markdown file: SKILL.md plus every script and reference, embedded with checksums, and a note at the top tells Claude the one command that unpacks them. Raw link pattern:
+
+```
+https://raw.githubusercontent.com/kalatehjari/Skills/main/dist-md/<name>.md
+```
+
+Reading `skills/<name>/SKILL.md` alone also works for the instruction-only skills (observer-multi-lens-reasoning), but most skills need their `scripts/` and `references/` too, so prefer the zip or the single `.md`.
+
+Most scripts need Python 3 and, depending on the skill, LibreOffice, ffmpeg, Node or Playwright. Each SKILL.md says what it needs and gives the install command.
 
 ## Repository layout
 
@@ -55,6 +74,7 @@ skills/<name>/            original skills (MIT)
   evals/                  test prompts, sample files, smoke tests
   LICENSE
 third-party/<author>/<name>/   unmodified upstream skills with their licences
+.claude-plugin/marketplace.json   Claude Code plugin marketplace (groups the skills into 4 plugins)
 dist-console/             installable zips of original skills (tools/package_md.py --zip)
 dist-md/                  single-file .md builds of original skills (tools/package_md.py)
 dist/                     installable zips of third-party skills (tools/package.py)

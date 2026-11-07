@@ -1,0 +1,57 @@
+{
+  "name": "kalatehjari-skills",
+  "owner": {
+    "name": "Roohollah Kalatehjari"
+  },
+  "metadata": {
+    "description": "Agent Skills for Claude by Roohollah Kalatehjari (GEOTECH-LAB, AUT): document workbenches, reasoning and workflow tools, Persian writing, and creative media",
+    "version": "1.1.0"
+  },
+  "plugins": [
+    {
+      "name": "document-workbenches",
+      "description": "Word, Excel, PowerPoint and PDF toolkits with tested Python scripts",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/docx-workbench",
+        "./skills/xlsx-workbench",
+        "./skills/pptx-workbench",
+        "./skills/pdf-workbench"
+      ]
+    },
+    {
+      "name": "reasoning-and-workflow",
+      "description": "Multi-candidate arena, multi-lens Observer reasoning, and long jobs run as scheduled team workflows",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/arena-supreme",
+        "./skills/observer-multi-lens-reasoning",
+        "./skills/scheduled-team-workflow"
+      ]
+    },
+    {
+      "name": "persian-writing",
+      "description": "Persian (Farsi) science fiction written as native literary prose",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/farsi-scifi-builder"
+      ]
+    },
+    {
+      "name": "creative-media",
+      "description": "Audiobooks, music videos, cubist animation, vinyl visualisers and pen-and-ink browser games",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/audiobook-narrator",
+        "./skills/music-video-director",
+        "./skills/cubism-animator",
+        "./skills/vinyl-groove-visualiser",
+        "./skills/pen-and-ink-game-builder"
+      ]
+    }
+  ]
+}
