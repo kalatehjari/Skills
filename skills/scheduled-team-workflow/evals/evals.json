@@ -1,0 +1,83 @@
+{
+  "skill_name": "scheduled-team-workflow",
+  "evals": [
+    {
+      "id": 1,
+      "name": "single-agent-setup-transcripts",
+      "prompt": "I've got a pile of interview transcripts in my Dropbox under /Research/Coastal Interviews/raw. I want Claude to clean each one up (fix the auto-transcription errors, label the speakers) and code it with my codebook at /Research/Coastal Interviews/codebook.md, two transcripts an hour, saving the coded versions in /Research/Coastal Interviews/coded until they're all done. I'm in Auckland and I'll mostly be away, so just put the results in Dropbox. Can you set that up as a scheduled task?",
+      "expected_output": "Reads the folder and codebook first. Writes a TASK.md in the job folder from the template: units listed (one per transcript), claim files that rely on create-fails-if-exists, never overwrite inputs or outputs, questions written to questions/, at most two transcripts per run, notes per transcript, a DONE.md end condition, and the consent note honoured. Creates claims/, questions/ and coded/. Creates an hourly scheduled task in the cloud with a standalone prompt that points to TASK.md, caps the work, pre-approves the file actions, forbids questions and stops when DONE.md exists; notifications off. Reports the approval setting (and what to do if it isn't automatic), offers to start the first run now, and says to pause the task when DONE.md appears.",
+      "files": [
+        "evals/files/sim-coastal.md"
+      ],
+      "expectations": [
+        "Work instructions live in a TASK.md file in the job folder, and the task prompt points to it",
+        "Runs claim a transcript with a claim file before working on it, so overlapping runs can't take the same one",
+        "Nothing existing is overwritten or edited: raw files, codebook and consent notes stay untouched and each output is created once",
+        "Each run is capped at two transcripts",
+        "Open decisions for the owner go to one dedicated place (such as questions/) instead of stopping the run or being scattered through notes",
+        "The participant-6 marae restriction is applied across all outputs, including notes",
+        "The scheduled task is hourly, cloud-only, with notifications off, and the approval setting is checked and explained",
+        "The first run is started now and its result is checked (claim or output, or a scheduled check-in)",
+        "There is a defined end: a done marker and the task pausing itself, or the user told to pause it"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "add-second-account",
+      "prompt": "The Persian translation of my lab manual has been running as a scheduled task for a week, but it's slow. I have a second Claude account. Can that account work on it in parallel with you without the two of you translating the same chapters? Give me exactly what I need to paste into the other account.",
+      "expected_output": "Explains that the existing claim files already stop double work, and what the other account needs: the same Dropbox files (same account, or a shared folder whose path may differ), the skill or its Dropbox copy, its own scheduled task with an offset minute and automatic approval. Installs a coordination protocol (PROTOCOL.md: claims with agent lines, per-agent status, event log, messages), creates its folders, and updates this account's task prompt with update_trigger (not delete and recreate). Gives one paste-in message for the other account containing the full agent-B prompt, its schedule and the approval check, plus a verification step (who_am_i email and the TASK.md path or a canary file) to prove both see the same folder. Mentions continuity and term-clash risks.",
+      "files": [
+        "evals/files/sim-lab-single.md"
+      ],
+      "expectations": [
+        "The user gets one paste-in message for the other account that contains the complete agent-B prompt and its schedule",
+        "The other account verifies it sees the same Dropbox folder (who_am_i email, file id or a canary file) before relying on it",
+        "A different Dropbox or a shared folder at another path is handled (path mapping, or a stop-and-fix plan)",
+        "The other account's access to the persian-technical-style skill is handled (Dropbox fallback path, checked)",
+        "Coordination relies on per-chapter claim files that only one agent can create, not on a shared file both agents edit",
+        "Each agent's current activity is visible in files (per-agent status files and/or an event log)",
+        "This account's existing task is changed with update_trigger and keeps its schedule (not deleted and recreated)",
+        "The two tasks run at offset minutes",
+        "DONE.md can't be created while another agent still holds the last chapter",
+        "After claiming, an agent confirms the chapter is really its own (reads the claim back, or re-checks that no draft has appeared)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "peer-learning",
+      "prompt": "The two accounts are both working on the lab manual translation now, and the coordination files seem to be working. Can you also set up a way for the two of them to tell each other what they've learned, what went wrong and what worked, and to give each other feedback, so the translation keeps getting better?",
+      "expected_output": "Creates PEER.md in the job folder and the peer/retro, peer/review and peer/digest folders. Each run reads peers' notes at the start and writes a retro at the end; one peer review per run of another agent's chapter, with quoted strengths and concrete fixes, never editing that chapter; a versioned digest of lessons created as new files. Guardrails: the owner's files outrank peer notes, lessons are habits only, term or style changes and unresolved disagreements go to questions/, feedback is specific with quotes, notes are short. Wires it in through PROTOCOL.md (replaced between runs, before 02:20Z) so neither account's prompt has to change, and tells the user what to read and when the first digest will appear.",
+      "files": [
+        "evals/files/sim-lab-team.md"
+      ],
+      "expectations": [
+        "A peer-learning instruction file and new folders are created in the job folder, and every note is a new file",
+        "Every run writes a reflection note: what worked, what went wrong, what it will change",
+        "Agents review each other's chapters with quoted findings and concrete fixes, and never edit the reviewed chapter",
+        "Lessons are consolidated into versioned files (digest or playbook) created as new versions, not edited in place",
+        "The owner's reference files (glossary, style guide, approved ch01) outrank anything in peer notes",
+        "Term or style changes and unresolved disagreements go to the owner in questions/, not settled between the agents",
+        "Feedback includes specific encouragement: something the peer did well, named concretely",
+        "It reaches both agents through the existing PROTOCOL.md, replaced at a quiet moment, so neither account's prompt changes",
+        "Peer work is bounded so it doesn't crowd out translation (word limits, caps, one review per run)",
+        "The reply tells the user where to read the lessons and when the first results will appear"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "diagnose-duplicate-work",
+      "prompt": "Something's off. Both accounts translated chapter 5 overnight and there are now two different versions in drafts. Why did that happen, and how do I stop it happening again?",
+      "expected_output": "Diagnoses from the log: A's run took about 3.5 hours, longer than the 3-hour claim window, and A's status wasn't refreshed during the run, so B treated the claim as stale and reclaimed it. Doesn't delete either version; asks the owner to choose (or offers a comparison). Fixes: a longer claim window, a liveness rule (a claim stays fresh while its holder's status was updated within the hour) with hourly status refreshes during long units, possibly one chapter per run or splitting long chapters; applied by replacing PROTOCOL.md (and TASK.md if the owner agrees) between runs, without changing prompts.",
+      "files": [
+        "evals/files/sim-lab-dup.md"
+      ],
+      "expectations": [
+        "Diagnoses from the log that B reclaimed A's claim as stale while A's long run was still working (the run outlasted the 3-hour window, and A's status wasn't refreshed during it)",
+        "Doesn't delete or overwrite either version of chapter 5; the owner chooses, optionally with a comparison",
+        "Proposes a liveness rule: a claim stays fresh while its holder's status file was updated within the hour, with status refreshed during long units",
+        "Proposes a longer claim window and/or fewer chapters per run, or splitting very long chapters",
+        "Applies the fix by replacing PROTOCOL.md at a quiet moment, with no prompt changes, and adds an owner log event explaining it"
+      ]
+    }
+  ]
+}

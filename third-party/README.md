@@ -12,6 +12,7 @@ These skills were written by others and are included here, unmodified, under the
 | [internal-comms](anthropic/internal-comms) | [anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/internal-comms) | Apache-2.0 | `8a1541c` |
 | [mcp-builder](anthropic/mcp-builder) | [anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/mcp-builder) | Apache-2.0 | `8a1541c` |
 | [avoid-ai-writing](conorbronsdon/avoid-ai-writing) | [conorbronsdon/avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) | MIT | `bdeb726` |
+| motion-graphics (54 zips; Dropbox copy only, not mirrored on GitHub) | [iart-ai/motion-skills](https://github.com/iart-ai/motion-skills) | MIT | 2026-10-03 (packaged with small upload fixes, see its INDEX) |
 
 ## Not included, on purpose
 

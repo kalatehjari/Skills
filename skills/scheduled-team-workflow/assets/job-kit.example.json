@@ -1,0 +1,42 @@
+{
+  "job_name": "the Persian adaptation of the novel «حدِ ممکن»",
+  "task_name": "Had-e Momken Persian adaptation",
+  "job_folder": "/Novel/Farsi Novel/Had-e Momken/had-e-momken",
+  "owner": "the author",
+  "unit": {"singular": "unit", "plural": "units"},
+  "units_per_run": 2,
+  "stale_hours": 3,
+  "done_file": "DONE.md",
+  "proposals_folder": "additions",
+  "timezone": "Pacific/Auckland",
+  "timezone_label": "Auckland time",
+  "skill": {
+    "name": "farsi-scifi-builder",
+    "dropbox_path": "/Claude Products/Skills/skills/farsi-scifi-builder/"
+  },
+  "agents": [
+    {"id": "A", "account": "owner's Claude account", "minute": 35, "task_name": "Had-e Momken Persian adaptation"},
+    {"id": "B", "account": "second Claude account", "minute": 30, "job_folder": "same",
+     "task_name": "Had-e Momken – Persian adaptation (hourly)"}
+  ],
+  "peer_learning": {
+    "enabled": true,
+    "notes_language": "English, quoting Persian and English where useful",
+    "authority_files": [
+      "`reference/style-sheet.md`, especially its «ترجیح‌های نویسنده» section",
+      "`reference/glossary.md`",
+      "`reference/story-bible.md`",
+      "the approved model chapter `drafts/u01_ch01.md`"
+    ],
+    "review_checks": [
+      "Story beats against the English: all present / missing: …",
+      "Glossary terms and recurring lines: OK / …",
+      "Layout blocks (OrisonVoice, Screen, Hand): OK / …",
+      "Iranian-marked expressions used only by Leila and the 2064 Mara: OK / …"
+    ],
+    "retro_words": 250,
+    "review_words": 350,
+    "digest_lessons": 25,
+    "digest_after": 6
+  }
+}

@@ -3,3 +3,16 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *-workspace/
+
+# Local-only (Dropbox) material, not published
+INDEX.md
+PROJECT_PROMPT.md
+_delete/
+third-party/iart-ai/
+skills/persian-literary-adaptation/
+skills/vox-director.skill
+dist-console/persian-literary-adaptation.zip
+dist-md/persian-literary-adaptation.md
+skills/observer-multi-lens-reasoning/case-studies/
+skills/observer-multi-lens-reasoning/self-improvement/
+skills/observer-multi-lens-reasoning/PROGRESS.md

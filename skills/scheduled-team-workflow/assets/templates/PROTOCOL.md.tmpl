@@ -1,0 +1,134 @@
+# Coordination protocol for parallel runs ({{version}})
+
+Job: {{job_name}}
+
+{{agent_count_word}} scheduled tasks work on this job at the same time, from the same Dropbox folder:
+
+| Agent | Account | Runs |
+|---|---|---|
+{{agents_table}}
+
+Your task prompt tells you which agent you are. Follow this file together with TASK.md.{{#peer}} Also follow **PEER.md**, which is part of this protocol: it's how the agents learn from each other and help each other improve.{{/peer}} None of this changes how to do the work itself. Where TASK.md and this file differ on coordination (claims, logging, status), this file wins.
+
+## Why it's built from many small files
+
+The Dropbox connector can create files but cannot edit a file in place, and creating a file that already exists fails. So:
+
+- a **claim file** is the lock, because only one agent can create it;
+- each agent has its **own status file**, and no one else writes to it;
+- the **log** is one new file per event, and its files are never changed;
+- **messages**{{#peer}} and **peer notes**{{/peer}} are one new file each.
+
+Never try to keep a single shared file up to date by editing it.
+
+## 0. Run ID and times
+
+At the start of the run, take the current UTC time and make your run ID: `<agent>-<yyyymmddThhmmZ>`, for example `A-20261010T1135Z`. Use UTC everywhere. In file names, write times as `yyyymmddThhmmssZ` (no colons).
+
+## 1. Read the board (with TASK.md's first step)
+
+First, two stop checks:
+
+- If `PAUSE.md` exists in the job folder, {{owner}} has paused every agent. Stop at once without writing anything.
+- If {{done_file}} exists, the job is finished. Write an `end` event, set your status to `done`, and stop.{{#peer}} No retro.{{/peer}}
+
+Otherwise, in addition to what TASK.md asks you to read first:
+
+1. List `claims/`, and read every claim file in it.
+2. Read the other agents' status files in `status/`.
+3. List `log/` and read the latest ~10 entries.
+4. List `messages/`. Read every message addressed to you or to everyone (`…_<from>-to-<you>.md`, `…_<from>-to-all.md`) that has no matching `<message name>.read-<you>` file. Act on it (for example, reuse a term it names), then create that `.read-<you>` file containing your run ID.
+{{#peer}}5. **Learn from your peers:** do PEER.md §2.
+{{/peer}}
+Then write a `start` log event (step 4).
+
+## 2. Picking and claiming a {{unit}}
+
+Pick the {{unit}} exactly as TASK.md says. Then create its claim file (the name TASK.md gives, such as `claims/<{{unit}} id>.claim`) with this content:
+
+```
+agent: A
+run: A-20261010T1135Z
+{{unit}}: <id>
+claimed_utc: 2026-10-10T11:35:12Z
+```
+
+- If creation fails because the file exists, another agent got there first. Go back to TASK.md and pick the next {{unit}}.
+- A claim with no `agent:` line was made before this protocol existed. Treat it like any other claim.
+- **Fresh or stale:** a claim is stale only when both are true: it is older than the window (TASK.md's window if it gives one, otherwise {{stale_hours}} hours; use `claimed_utc` if present, otherwise the file's modified time), and its holder's status file has not been updated in the last hour. A recent status update means the holder is still working, however old the claim is.
+- **Reclaiming a stale claim:** read it, write a `stale` log event naming the previous holder and run, read it again just before deleting it, and delete it only if it hasn't changed. Then create your own.
+- **Never delete a fresh claim**, and never delete someone else's claim unless it is stale.
+
+**Check that the claim is really yours.** Another agent may have finished the {{unit}} between your listing and your claim: it saves its output, deletes its claim, and your create succeeds. So, right after your claim succeeds:
+
+1. Read your claim file back and check that it holds your run ID.
+2. List the outputs folder again. If the {{unit}}'s output now exists, delete your claim, write a `released` log event, and pick the next {{unit}}.
+
+Then write a `claim` log event (step 4) and update your status (step 3).
+
+**Attribution:** begin the notes or log file that TASK.md asks you to write for each {{unit}} with the line `Done by: <agent> (<run ID>)`. If TASK.md asks for no such file, put that line in your `saved` log event. Other agents use it to know whose work they are looking at.
+
+## 3. Your status file: `status/<agent>.md`
+
+Only you write your own status file; never touch another agent's. To update it, delete your file, then create it again (if it doesn't exist, just create it). Content:
+
+```
+agent: A
+run: A-20261010T1135Z
+state: working | idle | done
+{{unit}}: <id>        (or - when idle)
+updated_utc: 2026-10-10T11:36:02Z
+last_finished: <id> at 2026-10-10T11:20:44Z
+note: one short line
+```
+
+Update it right after claiming a {{unit}}, right after saving one, and at the end of the run (`idle`, or `done` if nothing is left). If a {{unit}} takes long, also refresh it between major steps, at least once an hour: that is how other agents can tell you're still working (step 2).
+
+## 4. The log: `log/`
+
+For each event, create one new file named `<yyyymmddThhmmssZ>_<agent>_<event>_<{{unit}} id or ->.md`, for example `log/20261010T113512Z_A_claim_u03.md`. Content: your run ID plus one or two lines (what happened, file names). Never edit or delete a log file.
+
+| Event | When |
+|---|---|
+| `start` | start of run, after reading the board |
+| `claim` | you claimed a {{unit}} |
+| `stale` | you reclaimed a stale claim (name the old holder) |
+| `released` | you dropped a claim because the {{unit}} turned out to be done already |
+| `saved` | output and notes saved, claim deleted |
+| `question` | you wrote a question for {{owner}} in `questions/` |
+| `proposal` | you proposed a new term or decision for approval |
+| `message` | you sent a message to another agent |
+{{#peer}}| `retro` | you wrote your retro in `peer/retro/` |
+| `review` | you reviewed another agent's work in `peer/review/` |
+| `digest` | you created a new digest in `peer/digest/` |
+{{/peer}}| `error` | something failed and you couldn't finish a {{unit}} (say what) |
+| `end` | end of run ({{units}} finished this run) |
+
+## 5. Messages between agents: `messages/`
+
+Messages are for coordination that can't wait.{{#peer}} Lessons, encouragement and feedback go in `peer/` (PEER.md).{{/peer}} Create `messages/<yyyymmddThhmmssZ>_<from>-to-<to>.md`, where `<to>` is an agent letter or `all`, for example `messages/20261010T114210Z_A-to-B.md`. Use it for:
+
+- a term or decision another agent should follow, especially if you saw it choose differently for the same thing;
+- a continuity point (for example: "in u05 I introduced the term X for Y; keep it in u06").
+
+Messages are never for {{owner}}. Anything that needs {{owner}}'s decision goes to `questions/`, as TASK.md says.
+
+## 6. Shared decisions and continuity
+
+- **Just before saving,** list the folder where TASK.md keeps new terms or decisions (such as `{{proposals_folder}}/`) again. If another agent chose something since you started that covers part of your work, use its choice.
+- If your {{unit}} follows one another agent did, read that agent's output for it (the work itself, not only its notes) for names, forms of address and lines yours will echo.
+- If your {{unit}} follows one another agent hasn't finished yet (for example, the previous part of the same chapter), work from the source, say so in your notes, and send that agent a short message listing the names, terms and recurring details you introduced, so the seam can be checked.
+
+## 7. End of run (with TASK.md's last steps)
+
+After saving each {{unit}}: delete your claim, write a `saved` event, update your status.
+
+When you stop working:
+
+{{#peer}}1. Write your retro (PEER.md §3).
+2. If you still have room, do a peer review (PEER.md §4), then a digest if one is due (PEER.md §5).
+3. Write an `end` event and set your status to `idle` (or `done`).
+{{/peer}}{{^peer}}1. Write an `end` event and set your status to `idle` (or `done`).
+{{/peer}}
+
+**{{done_file}}:** create it only when every {{unit}} in TASK.md's list has its output. If the only {{units}} left without output have fresh claims, the job isn't finished: another agent is still working. Write your `end` event, set your status to `idle`, and stop. This overrides TASK.md's "no {{unit}} left" rule. Only one agent can create {{done_file}}, because creating fails if it already exists.{{#peer}} Whoever creates it adds a line pointing to the newest digest in `peer/digest/`.{{/peer}}

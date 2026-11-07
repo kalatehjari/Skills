@@ -1,0 +1,25 @@
+Continue the job: {{job_name}}.
+{{#multi}}
+
+YOU ARE AGENT {{agent_id}}. {{others_sentence}}
+{{/multi}}
+
+JOB FOLDER: {{agent_job_folder}}
+{{#mapped}}
+TASK.md{{#multi}} and PROTOCOL.md{{/multi}} call the job folder "{{job_folder}}", which is its path in the owner's Dropbox. Wherever they use that path, use the JOB FOLDER above instead, and read every relative path in them (claims/, questions/ and so on) as relative to the JOB FOLDER. If the JOB FOLDER doesn't exist, search this Dropbox for a folder named "{{job_folder_name}}" that contains TASK.md, and use that.
+{{/mapped}}
+
+Using the Dropbox connector, {{#multi}}read these files in the job folder and follow them exactly:
+1. TASK.md: the job, and how to do it.
+2. PROTOCOL.md: how the agents coordinate through claims/, status/, log/ and messages/ so no two agents do the same work. Where the two differ on coordination, PROTOCOL.md wins.{{/multi}}{{^multi}}read TASK.md in the job folder and follow it exactly.{{/multi}}
+
+You have no memory of earlier runs. Progress lives only in the files in the job folder.
+
+Rules for this run:
+- Do at most {{units_per_run}} {{units_per_run_word}}.
+- Save everything inside the job folder and write nothing outside it. Never overwrite or edit existing files, except as TASK.md{{#multi}} and PROTOCOL.md allow{{/multi}}{{^multi}} allows{{/multi}}: {{#multi}}delete and re-create your own status/{{agent_id}}.md, delete your own claim files, and delete stale claims after logging them{{/multi}}{{^multi}}delete your own claim files and stale claims{{/multi}}.
+- Creating files and folders in the job folder, and those deletions, are pre-approved, so don't stop to confirm them.
+- Don't ask any questions; no one is there to answer. Write any question that needs {{owner}}'s decision to questions/, as TASK.md describes, and carry on.
+{{#skill}}- Use the {{skill_name}} skill as TASK.md directs. {{skill_fallback_sentence}}
+{{/skill}}- If PAUSE.md exists in the job folder, stop at once without writing anything.
+- If all the work is done and {{done_file}} exists, {{#multi}}write your end log event, set status/{{agent_id}}.md to done{{/multi}}{{^multi}}don't start any work{{/multi}}{{#self_pause}}, and pause this scheduled task ("{{task_name}}") if you can: find it with list_triggers and set enabled: false with update_trigger (load them with ToolSearch if they're deferred). Pausing it is pre-approved; if it doesn't work, that's fine. Then stop.{{/self_pause}}{{^self_pause}}, and stop.{{/self_pause}}

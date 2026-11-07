@@ -1,0 +1,12 @@
+Please set up a scheduled task in this account. It's for a job my Claude accounts share through Dropbox, and this account will be agent {{agent_id}}. Don't do any of the job's work in this chat yourself.
+
+1. Using the Dropbox connector, run who_am_i.{{#dropbox_email}} It should be signed in as {{dropbox_email}}, the Dropbox that holds the job. If it's signed in as anyone else, stop here without creating anything and tell me which email it is.{{/dropbox_email}}{{^dropbox_email}} Tell me which email it's signed in as.{{/dropbox_email}}
+2. Find the job folder{{#known_folder}}: {{agent_job_folder}}{{/known_folder}}{{^known_folder}}. In the owner's Dropbox it is "{{job_folder}}". In this Dropbox it may sit at a different path, so search for a folder named "{{job_folder_name}}" that contains TASK.md{{/known_folder}}. Check that TASK.md{{#multi}} and PROTOCOL.md are{{/multi}}{{^multi}} is{{/multi}} there, and tell me TASK.md's full path and file id.{{#skill_path}} Also check that {{skill_path_here}} holds SKILL.md: the {{skill_name}} skill may not be installed in this account, and then the runs read it from there.{{/skill_path}} If anything is missing, stop and tell me.
+3. If this account already has a scheduled task for this job, replace its prompt with the one below and keep its other settings. Otherwise create one: name "{{task_name}}", every hour at :{{minute_padded}} {{timezone_label}} (cron `{{cron}}`), running in the cloud (it doesn't need my computer), with notifications off.
+4. The prompt is the text between the two lines below, exactly as written{{^known_folder}}, except that <JOB FOLDER> must be replaced with the path you found in step 2{{/known_folder}}.
+5. Tell me the approval setting the task got, and check that Dropbox is among its connectors. Its runs must not stop to ask for approval, so if it isn't set to approve automatically, tell me how to switch that on.
+6. If it approves automatically, start its first run now instead of waiting for the schedule.
+
+----------
+{{agent_prompt}}
+----------
